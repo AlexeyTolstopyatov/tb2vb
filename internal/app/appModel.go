@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"tb2vb/internal/tb"
 )
 
@@ -28,15 +29,10 @@ import (
 // Attribute PredeclaredId = True
 //
 
-type TwinBasicModel struct {
-	twinBasicFormJsonDecoder *json.Decoder
-	twinBasicCodeBytes       *string
-}
-
 // Init
 // Main constructor method for filling
 // TwinBasic-module structure
-func (t *TwinBasicModel) Init(twin string, tbform string) {
+func Init(twin string, tbform string) {
 	// Read and Write Constructor path
 	data, err := os.ReadFile(tbform)
 	if err != nil {
@@ -48,16 +44,15 @@ func (t *TwinBasicModel) Init(twin string, tbform string) {
 	if err != nil {
 		panic(err)
 	}
-	t.twinBasicFormJsonDecoder = json.NewDecoder(bytes.NewReader(data))
-
 	code, err := os.ReadFile(twin)
 	if err != nil {
 		panic(err)
 	}
 
-	// Create [.frm] File
 	frmContent := generateConstructorPart(form)
-	frmEvents := generateCodePart(code)
+	frmEvents := generateCodePart(bytes.NewBuffer(code))
+
+	frmContent += frmEvents
 
 	// Saving...
 	err = os.WriteFile(".frm", []byte(frmContent), 0644)
@@ -109,6 +104,25 @@ Begin VB.Form %s\
 	return content
 }
 
-func generateCodePart(code bytes.Buffer) string {
+func generateCodePart(code *bytes.Buffer) string {
+	codestr := string(code.Bytes())
+	lines := strings.Split(codestr, "\n")
+	clines := make([]string, len(lines))
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
 
+		tokens := tb.GetTokens(line)
+		object := tb.FindObject(tokens)
+
+		if object.Type != "" {
+			line = tb.GetVbObject(object)
+		} else {
+			fmt.Println("Error")
+		}
+		clines = append(clines, line)
+	}
+	return strings.Join(clines, "\n")
 }

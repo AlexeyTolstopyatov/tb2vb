@@ -31,25 +31,20 @@ func FindAttributes(tokens []string) (attributes []TwinAttribute, restTokens []s
 			return
 		}
 
-
 		attr := TwinAttribute{}
 		attrValue := strings.TrimSuffix(strings.TrimPrefix(token, "["), "]")
 		attrArgs := strings.Split(attrValue, "(")
 		attr.Name = strings.TrimSpace(attrArgs[0])
 
-
 		if len(attrArgs) > 1 {
-
 			value := strings.TrimSpace(attrArgs[1])
 			value = strings.TrimSuffix(value, ")")
-
 			params := strings.Split(value, ",")
 
 			for _, param := range params {
 				attr.Arguments = append(attr.Arguments, strings.TrimSpace(param))
 			}
 		}
-
 		attributes = append(attributes, attr)
 	}
 	return
