@@ -8,6 +8,7 @@ import (
 	"tb2vb/internal/tb"
 )
 
+//
 // (C) Bilbo Backends 2025
 // TwinBasic project files divides by 2 kinds ->
 // 		*.tbform -- Twin Basic forms constructor
@@ -29,14 +30,15 @@ import (
 
 type TwinBasicModel struct {
 	twinBasicFormJsonDecoder *json.Decoder
-	twinBasicCodeBytes       *bytes.Reader
+	twinBasicCodeBytes       *string
 }
 
 // Init
-// Main constructor method for filling TwinBasic-module structure
+// Main constructor method for filling
+// TwinBasic-module structure
 func (t *TwinBasicModel) Init(twin string, tbform string) {
 	// Read and Write Constructor path
-	data, err := os.ReadFile(twin)
+	data, err := os.ReadFile(tbform)
 	if err != nil {
 		panic(err)
 	}
@@ -48,9 +50,14 @@ func (t *TwinBasicModel) Init(twin string, tbform string) {
 	}
 	t.twinBasicFormJsonDecoder = json.NewDecoder(bytes.NewReader(data))
 
+	code, err := os.ReadFile(twin)
+	if err != nil {
+		panic(err)
+	}
+
 	// Create [.frm] File
 	frmContent := generateConstructorPart(form)
-	//frmEvents := generateLogicPart(twin)
+	frmEvents := generateCodePart(code)
 
 	// Saving...
 	err = os.WriteFile(".frm", []byte(frmContent), 0644)
@@ -65,11 +72,12 @@ func (t *TwinBasicModel) Init(twin string, tbform string) {
 func generateConstructorPart(form tb.TwinForm) string {
 	content := fmt.Sprintf(`VERSION 5.00
 Begin VB.Form %s\
-   Caption         =   "%s"
-   ClientHeight    =   %d
-   ClientWidth     =   %d
-   StartUpPosition =   %s
-`, form.Name,
+	Caption         =   "%s"
+	ClientHeight    =   %d
+	ClientWidth     =   %d
+	StartUpPosition =   %s
+`,
+		form.Name,
 		form.Caption,
 		form.Height,
 		form.Width,
@@ -82,13 +90,13 @@ Begin VB.Form %s\
 		}
 
 		content += fmt.Sprintf(`
-   Begin %s %s
-      Caption         =   "%s"
-      Height          =   %d
-      Left            =   %d
-      Top             =   %d
-      Width           =   %d
-   End`,
+	Begin %s %s
+    	Caption         =   "%s"
+        Height          =   %d
+        Left            =   %d
+        Top             =   %d
+        Width           =   %d
+    End`,
 			controlType,
 			control.Name,
 			control.Caption,
@@ -97,6 +105,10 @@ Begin VB.Form %s\
 			control.Top,
 			control.Width)
 	}
-	content += "End\n"
+	// End operator follows after code
 	return content
+}
+
+func generateCodePart(code bytes.Buffer) string {
+
 }

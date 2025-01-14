@@ -16,6 +16,7 @@ type TwinForm struct {
 // and Caption-elements, which contains Caption Property (e.g. Form, Label, Command)
 //    First idea is divide them by 2 groups: Text-Changed (by user) / Text-Unchangable (by user too)
 // I suggest is bad idea, but it better than nothing... Next time I'll rebuild determination logic
+//
 
 type TwinControl struct {
 	ClassName string `json:"_className"`
@@ -37,19 +38,15 @@ type TwinTextControl struct {
 	Height    int    `json:"Height"`
 }
 
-func GetVbControlByString(className string) string {
-	switch className {
-	case "Frame":
-		return "VB.Frame"
-	case "TextBox":
-		return "VB.TextBox"
-	case "CommandButton":
-		return "VB.CommandButton"
-	case "Label":
-		return "VB.Label"
-	case "ListBox":
-		return "VB.ListBox"
-	default:
-		return ""
-	}
+type TwinAttribute struct {
+	Name      string
+	Value     string
+	Arguments []string
+}
+
+type TwinObject struct {
+	Name       string
+	Body       string
+	Type       string
+	Attributes []TwinAttribute
 }
